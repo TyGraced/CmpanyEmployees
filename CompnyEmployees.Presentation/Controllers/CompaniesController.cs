@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CompnyEmployees.Presentation.ModelBinders;
+using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
 
 namespace CompnyEmployees.Presentation.Controllers
@@ -14,10 +15,10 @@ namespace CompnyEmployees.Presentation.Controllers
         [HttpGet]
         public IActionResult GetCompanies()
         {
-            //throw new Exception("Exception");
             var companies = _service.CompanyService.GetAllCompanies(trackChanges: false);
             return Ok(companies);
         }
+
 
         [HttpGet("{id:guid}", Name = "CompanyById")]
         public IActionResult GetCompany(Guid id)
@@ -25,6 +26,7 @@ namespace CompnyEmployees.Presentation.Controllers
             var company = _service.CompanyService.GetCompany(id, trackChanges: false);
             return Ok(company);
         }
+
 
         [HttpPost]
         public IActionResult CreateCompany([FromBody] CompanyForCreationDto company)
@@ -35,6 +37,22 @@ namespace CompnyEmployees.Presentation.Controllers
             var createdCompany = _service.CompanyService.CreateCompany(company);
 
             return CreatedAtRoute("CompanyById", new { id = createdCompany.Id }, createdCompany);
+        }
+
+
+        [HttpGet("collection/({ids})", Name = "CompanyCollection")]
+        public IActionResult GetComapnyCollection([ModelBinder(BinderType = typeof(ArrayModelBinder))] IEnumerable<Guid> ids)
+        {
+            var companies = _service.CompanyService.GetByIds(ids, trackChanges: false);
+            return Ok(companies);
+        }
+
+        [HttpPost("collection")]
+        public IActionResult CreateCompanyCollection([FromBody] IEnumerable<CompanyForCreationDto> companyCollection)
+        {
+            var result = _service.CompanyService.CreateCompanyCollection(companyCollection);
+
+            return CreatedAtRoute("CompanyCollection", new { result.ids }, result.companies);
         }
     }
 }
