@@ -44,5 +44,13 @@ namespace CompnyEmployees.Presentation.Controllers
             var employee = _service.EmployeeService.GetEmployee(companyId, id, trackChanges:false);
             return Ok(employee);
         }
+
+        [HttpDelete("{id:guid}")]
+        public IActionResult DeleteEmployeeForCompany(Guid companyId, Guid id)
+        {
+            _service.EmployeeService.DeleteEmployeeForCompany(companyId, id, trackChanges:false);
+
+            return NoContent();
+        }
     }
 }
