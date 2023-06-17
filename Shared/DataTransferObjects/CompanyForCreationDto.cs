@@ -1,2 +1,6 @@
-﻿public record CompanyForCreationDto(string Name, string Address, string Country,
-        IEnumerable<EmployeeForCreationDto> Employees);
+﻿using Shared.DataTransferObjects;
+
+public record CompanyForCreationDto : CompanyForManipulationDto
+{
+    public IEnumerable<EmployeeForCreationDto>? Employees { get; init; }
+}
