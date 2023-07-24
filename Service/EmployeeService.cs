@@ -21,14 +21,14 @@ namespace Service
             _mapper = mapper;
         }
 
-        public async Task<EmployeeDto> CreateEmployeeForCompanyAsync(Guid companyId, EmployeeForCreationDto employeeForCreation, 
+        public async Task<EmployeeDto> CreateEmployeeForCompanyAsync(Guid companyId, EmployeeForCreationDto employeeForCreation,
             bool trackChanges)
         {
             await CheckIfCompanyExists(companyId, trackChanges);
 
             var employeeEntity = _mapper.Map<Employee>(employeeForCreation);
 
-            _repository.Employee.CreateEmployeeForCompany(companyId,employeeEntity);
+            _repository.Employee.CreateEmployeeForCompany(companyId, employeeEntity);
             await _repository.SaveAsync();
 
             var employeeToReturn = _mapper.Map<EmployeeDto>(employeeEntity);
@@ -50,7 +50,7 @@ namespace Service
         {
             await CheckIfCompanyExists(companyId, trackChanges);
             var employeeDb = await GetEmployeeForCompanyAndCheckIfItExists(companyId, id, trackChanges);
-            
+
             var employee = _mapper.Map<EmployeeDto>(employeeDb);
             return employee;
         }
@@ -67,16 +67,19 @@ namespace Service
             return (employeeToPatch: employeeToPatch, employeeEntity: employeeDb);
         }
 
-        public async Task<(IEnumerable<EmployeeDto> employees, MetaData metaData)> GetEmployeesAsync(Guid companyId, 
+        public async Task<(IEnumerable<EmployeeDto> employees, MetaData metaData)> GetEmployeesAsync(Guid companyId,
             EmployeeParameters employeeParameters, bool trackChanges)
         {
+            if (!employeeParameters.ValidAgeRange)
+                throw new MaxAgeRangeBadRequestException();
+
             await CheckIfCompanyExists(companyId, trackChanges);
 
             var employeesWithMetaData = await _repository.Employee
                 .GetEmployeesAsync(companyId, employeeParameters, trackChanges);
             var employeesDto = _mapper.Map<IEnumerable<EmployeeDto>>(employeesWithMetaData);
 
-            return (employees: employeesDto, metaData: employeesWithMetaData.MetaData);    
+            return (employees: employeesDto, metaData: employeesWithMetaData.MetaData);
         }
 
         public async Task SaveChangesForPatchAsync(EmployeeForUpdateDto employeeToPatch, Employee employeeEntity)
@@ -85,7 +88,7 @@ namespace Service
             await _repository.SaveAsync();
         }
 
-        public async Task UpdateEmployeeForCompanyAsync(Guid companyId, Guid id, EmployeeForUpdateDto 
+        public async Task UpdateEmployeeForCompanyAsync(Guid companyId, Guid id, EmployeeForUpdateDto
             employeeForUpdate, bool compTrackChanges, bool empTrackChanges)
         {
             await CheckIfCompanyExists(companyId, compTrackChanges);
