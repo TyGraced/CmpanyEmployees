@@ -1,6 +1,7 @@
 ﻿using Contracts;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
+using Shared.RequestFeatures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +20,26 @@ namespace Repository
 
         public void DeleteCompany(Company company) => Delete(company);
 
-        public async Task<IEnumerable<Company>> GetAllCompaniesAsync(bool trackChanges) =>
-            await FindAll(trackChanges)
-                .OrderBy(c => c.Name)
-                .ToListAsync();
+        public async Task<PagedList<Company>> GetAllCompaniesAsync(CompanyParameters companyParameters, 
+            bool trackChanges)
+        {
+            var companies = await FindAll(trackChanges)
+              .OrderBy(c => c.Name)
+              .Skip((companyParameters.PageNumber - 1) * companyParameters.PageSize)
+              .Take(companyParameters.PageSize)
+              .ToListAsync();
+
+            var count = await FindAll(trackChanges).CountAsync();
+
+            return new PagedList<Company>(companies, count, companyParameters.PageNumber, companyParameters.PageSize);
+
+            //var companies = await FindAll(trackChanges)
+            //   .OrderBy(c => c.Name)
+            //   .ToListAsync();
+
+            //return PagedList<Company>
+            //    .ToPagedList(companies, companyParameters.PageNumber, companyParameters.PageSize);
+        }
 
         public async Task<IEnumerable<Company>> GetByIdsAsync(IEnumerable<Guid> ids, bool trackChanges) =>
             await FindByCondition(x => ids.Contains(x.Id), trackChanges)
