@@ -8,6 +8,7 @@
 
         public bool ValidAgeRange => MaxAge > MinAge;
 
+        //public string Position { get; set; }
         public string? SearchTerm { get; set; }
     }
 }

@@ -1,12 +1,8 @@
 ﻿using Contracts;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
+using Repository.Extensions;
 using Shared.RequestFeatures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repository
 {
@@ -23,22 +19,24 @@ namespace Repository
         public async Task<PagedList<Company>> GetAllCompaniesAsync(CompanyParameters companyParameters, 
             bool trackChanges)
         {
+
             var companies = await FindAll(trackChanges)
-              .OrderBy(c => c.Name)
-              .Skip((companyParameters.PageNumber - 1) * companyParameters.PageSize)
-              .Take(companyParameters.PageSize)
-              .ToListAsync();
+               .Search(companyParameters.SearchTerm)
+               .OrderBy(c => c.Name)
+               .ToListAsync();
 
-            var count = await FindAll(trackChanges).CountAsync();
-
-            return new PagedList<Company>(companies, count, companyParameters.PageNumber, companyParameters.PageSize);
+            return PagedList<Company>
+                .ToPagedList(companies, companyParameters.PageNumber, companyParameters.PageSize);
 
             //var companies = await FindAll(trackChanges)
-            //   .OrderBy(c => c.Name)
-            //   .ToListAsync();
+            //  .OrderBy(c => c.Name)
+            //  .Skip((companyParameters.PageNumber - 1) * companyParameters.PageSize)
+            //  .Take(companyParameters.PageSize)
+            //  .ToListAsync();
 
-            //return PagedList<Company>
-            //    .ToPagedList(companies, companyParameters.PageNumber, companyParameters.PageSize);
+            //var count = await FindAll(trackChanges).CountAsync();
+
+            //return new PagedList<Company>(companies, count, companyParameters.PageNumber, companyParameters.PageSize);
         }
 
         public async Task<IEnumerable<Company>> GetByIdsAsync(IEnumerable<Guid> ids, bool trackChanges) =>
