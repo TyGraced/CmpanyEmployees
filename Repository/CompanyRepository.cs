@@ -22,7 +22,7 @@ namespace Repository
 
             var companies = await FindAll(trackChanges)
                .Search(companyParameters.SearchTerm)
-               .OrderBy(c => c.Name)
+               .Sort(companyParameters.OrderBy)
                .ToListAsync();
 
             return PagedList<Company>
