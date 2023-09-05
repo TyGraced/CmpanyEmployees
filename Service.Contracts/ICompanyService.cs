@@ -1,11 +1,12 @@
-﻿using Shared.DataTransferObjects;
+﻿using Entities.Models;
+using Shared.DataTransferObjects;
 using Shared.RequestFeatures;
 
 namespace Service.Contracts
 {
     public interface ICompanyService
     {
-        Task<(IEnumerable<CompanyDto> companies, MetaData metaData)> GetAllCompaniesAsync(
+        Task<(IEnumerable<Entity> companies, MetaData metaData)> GetAllCompaniesAsync(
             CompanyParameters companyParameters, bool trackChanges);
         Task<CompanyDto> GetCompanyAsync(Guid companyId, bool trackChanges);
         Task<CompanyDto> CreateCompanyAsync(CompanyForCreationDto company);

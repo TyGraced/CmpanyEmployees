@@ -5,6 +5,7 @@ using Entities.Models;
 using Service.Contracts;
 using Shared.DataTransferObjects;
 using Shared.RequestFeatures;
+using System.Dynamic;
 
 namespace Service
 {
@@ -13,12 +14,15 @@ namespace Service
         private readonly IRepositoryManager _repository;
         private readonly ILoggerManager _logger;
         private readonly IMapper _mapper;
+        private readonly IDataShaper<CompanyDto> _shaper;
 
-        public CompanyService(IRepositoryManager repository, ILoggerManager logger, IMapper mapper)
+        public CompanyService(IRepositoryManager repository, ILoggerManager logger, 
+            IMapper mapper, IDataShaper<CompanyDto> shaper)
         {
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
+            _shaper = shaper;
         }
 
         public async Task<CompanyDto> CreateCompanyAsync(CompanyForCreationDto company)
@@ -61,14 +65,16 @@ namespace Service
             await _repository.SaveAsync();
         }
 
-        public async Task<(IEnumerable<CompanyDto> companies, MetaData metaData)> GetAllCompaniesAsync(CompanyParameters companyParameters, 
+        public async Task<(IEnumerable<Entity> companies, MetaData metaData)> GetAllCompaniesAsync(CompanyParameters companyParameters, 
             bool trackChanges)
         {
             var companiesWithMetaData = await _repository.Company.GetAllCompaniesAsync(companyParameters, trackChanges);
 
             var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companiesWithMetaData);
 
-            return (companies: companiesDto, metaData: companiesWithMetaData.MetaData);
+            var shapedData = _shaper.ShapeData(companiesDto, companyParameters.Fields);
+
+            return (companies: shapedData, metaData: companiesWithMetaData.MetaData);
         }
 
         public async Task<IEnumerable<CompanyDto>> GetByIdsAsync(IEnumerable<Guid> ids, bool trackChanges)
