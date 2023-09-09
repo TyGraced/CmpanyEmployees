@@ -1,5 +1,6 @@
 ﻿using CompnyEmployees.Presentation.ActionFilters;
 using CompnyEmployees.Presentation.ModelBinders;
+using Entities.LinkModels;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
 using Shared.RequestFeatures;
@@ -15,14 +16,26 @@ namespace CompnyEmployees.Presentation.Controllers
 
         public CompaniesController(IServiceManager service) => _service = service;
 
+        [HttpOptions]
+        public IActionResult GetCompaniesOptions()
+        {
+            Response.Headers.Add("Allow", "GET, OPTIONS, POST");
+
+            return Ok();
+        }
+
         [HttpGet]
+        [ServiceFilter(typeof(ValidateMediaTypeAttribute))]
         public async Task<IActionResult> GetCompanies([FromQuery] CompanyParameters companyParameters)
         {
-            var pagedResult = await _service.CompanyService.GetAllCompaniesAsync(companyParameters, trackChanges: false);
-            
-            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
+            var linkParams = new LinkCompanyParmeters(companyParameters, HttpContext);
 
-            return Ok(pagedResult.companies);
+            var result = await _service.CompanyService.GetAllCompaniesAsync(linkParams, trackChanges: false);
+            
+            Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(result.metaData));
+
+            return result.linkResponse.HasLinks ? Ok(result.linkResponse.LinkedEntities) :
+                Ok(result.linkResponse.ShapedEntities);
         }
 
 

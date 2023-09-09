@@ -1,5 +1,6 @@
 using CompnyEmployees.Extensions;
 using CompnyEmployees.Presentation.ActionFilters;
+using CompnyEmployees.Utility;
 using Contracts;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
@@ -33,8 +34,11 @@ NewtonsoftJsonPatchInputFormatter GetJsonPatchInputFormatter() =>
        .OfType<NewtonsoftJsonPatchInputFormatter>().First();
 
 builder.Services.AddScoped<ValidationFilterAttribute>();
+builder.Services.AddScoped<ValidateMediaTypeAttribute>();
 builder.Services.AddScoped<IDataShaper<EmployeeDto>, DataShaper<EmployeeDto>>();
 builder.Services.AddScoped<IDataShaper<CompanyDto>, DataShaper<CompanyDto>>();
+builder.Services.AddScoped<IEmployeeLinks, EmployeeLinks>();
+builder.Services.AddScoped<ICompanyLinks, CompanyLinks>();
 
 builder.Services.AddControllers(config =>
 {
@@ -44,6 +48,8 @@ builder.Services.AddControllers(config =>
 }).AddXmlDataContractSerializerFormatters()
 .AddCustomCSVFormatter()
        .AddApplicationPart(typeof(CompnyEmployees.Presentation.AssemblyReference).Assembly);
+
+builder.Services.AddCustomMediaTypes();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 //builder.Services.AddEndpointsApiExplorer();

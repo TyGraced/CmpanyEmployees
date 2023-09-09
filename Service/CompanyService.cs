@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Contracts;
 using Entities.Exceptions;
+using Entities.LinkModels;
 using Entities.Models;
 using Service.Contracts;
 using Shared.DataTransferObjects;
@@ -14,15 +15,15 @@ namespace Service
         private readonly IRepositoryManager _repository;
         private readonly ILoggerManager _logger;
         private readonly IMapper _mapper;
-        private readonly IDataShaper<CompanyDto> _shaper;
+        private readonly ICompanyLinks _companyLinks;
 
         public CompanyService(IRepositoryManager repository, ILoggerManager logger, 
-            IMapper mapper, IDataShaper<CompanyDto> shaper)
+            IMapper mapper, ICompanyLinks companyLinks)
         {
             _repository = repository;
             _logger = logger;
             _mapper = mapper;
-            _shaper = shaper;
+            _companyLinks = companyLinks;
         }
 
         public async Task<CompanyDto> CreateCompanyAsync(CompanyForCreationDto company)
@@ -65,16 +66,17 @@ namespace Service
             await _repository.SaveAsync();
         }
 
-        public async Task<(IEnumerable<Entity> companies, MetaData metaData)> GetAllCompaniesAsync(CompanyParameters companyParameters, 
+        public async Task<(LinkResponse linkResponse, MetaData metaData)> GetAllCompaniesAsync(LinkCompanyParmeters linkParmeters, 
             bool trackChanges)
         {
-            var companiesWithMetaData = await _repository.Company.GetAllCompaniesAsync(companyParameters, trackChanges);
+            var companiesWithMetaData = await _repository.Company.GetAllCompaniesAsync(linkParmeters.CompanyParameters, trackChanges);
 
             var companiesDto = _mapper.Map<IEnumerable<CompanyDto>>(companiesWithMetaData);
 
-            var shapedData = _shaper.ShapeData(companiesDto, companyParameters.Fields);
+            var links = _companyLinks.TryGenerateLinks(companiesDto, linkParmeters.CompanyParameters.Fields,
+                        linkParmeters.Context);
 
-            return (companies: shapedData, metaData: companiesWithMetaData.MetaData);
+            return (linkResponse: links, metaData: companiesWithMetaData.MetaData);
         }
 
         public async Task<IEnumerable<CompanyDto>> GetByIdsAsync(IEnumerable<Guid> ids, bool trackChanges)
