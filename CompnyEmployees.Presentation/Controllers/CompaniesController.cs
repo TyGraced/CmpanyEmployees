@@ -24,7 +24,7 @@ namespace CompnyEmployees.Presentation.Controllers
             return Ok();
         }
 
-        [HttpGet]
+        [HttpGet(Name = "GetCompanies")]
         [ServiceFilter(typeof(ValidateMediaTypeAttribute))]
         public async Task<IActionResult> GetCompanies([FromQuery] CompanyParameters companyParameters)
         {
@@ -47,7 +47,7 @@ namespace CompnyEmployees.Presentation.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost(Name = "CreateCompany")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> CreateCompany([FromBody] CompanyForCreationDto company)
         {

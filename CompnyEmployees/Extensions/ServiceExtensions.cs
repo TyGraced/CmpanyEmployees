@@ -6,7 +6,6 @@ using Microsoft.EntityFrameworkCore;
 using Repository;
 using Service;
 using Service.Contracts;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace CompnyEmployees.Extensions
 {
@@ -48,24 +47,29 @@ namespace CompnyEmployees.Extensions
         {
             services.Configure<MvcOptions>(config =>
             {
-                var xmlOutputFormatter = config.OutputFormatters
-                                .OfType<XmlDataContractSerializerOutputFormatter>()?.FirstOrDefault();
-
-                if (xmlOutputFormatter != null)
-                {
-                    xmlOutputFormatter.SupportedMediaTypes
-                    .Add("application/vnd.codemaze.hateoas+xml");
-                }
-
                 var systemTextJsonOutputFormatter = config.OutputFormatters
-                .OfType<SystemTextJsonInputFormatter>()?.FirstOrDefault();
+                .OfType<SystemTextJsonInputFormatter>()?
+                .FirstOrDefault();
 
                 if (systemTextJsonOutputFormatter != null)
                 {
                     systemTextJsonOutputFormatter.SupportedMediaTypes
                     .Add("application/vnd.codemaze.hateoas+json");
+                    systemTextJsonOutputFormatter.SupportedMediaTypes
+                    .Add("application/vnd.codemaze.apiroot+json");
                 }
 
+                var xmlOutputFormatter = config.OutputFormatters
+                                .OfType<XmlDataContractSerializerOutputFormatter>()?
+                                .FirstOrDefault();
+
+                if (xmlOutputFormatter != null)
+                {
+                    xmlOutputFormatter.SupportedMediaTypes
+                    .Add("application/vnd.codemaze.hateoas+xml");
+                    xmlOutputFormatter.SupportedMediaTypes
+                    .Add("application/vnd.codemaze.apiroot+xml");
+                }
             });
         }
     }
