@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using CompnyEmployees.Extensions;
 using CompnyEmployees.Presentation.ActionFilters;
 using CompnyEmployees.Utility;
@@ -17,6 +18,9 @@ LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nl
 builder.Services.ConfigureCors();
 builder.Services.ConfigureResponseCaching();
 builder.Services.ConfigureHttpCacheHeaders();
+builder.Services.AddMemoryCache();
+builder.Services.ConfigureRateLimitingOptions();
+builder.Services.AddHttpContextAccessor();
 builder.Services.ConfigureIISIntegration();
 builder.Services.ConfigureLoggerService();
 builder.Services.ConfigureRepositoryManager();
@@ -79,10 +83,13 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
     ForwardedHeaders = ForwardedHeaders.All
 });
 
+app.UseIpRateLimiting();
+
 app.UseCors("CorsPolicy");
 
 app.UseResponseCaching();
 app.UseHttpCacheHeaders();
+
 
 app.UseAuthorization();
 
