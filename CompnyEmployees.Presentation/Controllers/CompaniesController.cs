@@ -2,6 +2,7 @@
 using CompnyEmployees.Presentation.ModelBinders;
 using Entities.LinkModels;
 using Marvin.Cache.Headers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Service.Contracts;
 using Shared.RequestFeatures;
@@ -28,6 +29,7 @@ namespace CompnyEmployees.Presentation.Controllers
         }
 
         [HttpGet(Name = "GetCompanies")]
+        [Authorize(Roles = "Manager")]
         [ServiceFilter(typeof(ValidateMediaTypeAttribute))]
         public async Task<IActionResult> GetCompanies([FromQuery] CompanyParameters companyParameters)
         {
